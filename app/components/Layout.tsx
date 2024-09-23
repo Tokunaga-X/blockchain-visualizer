@@ -7,25 +7,25 @@ import Link from "next/link"
 interface LayoutProps {
     children: ReactNode
     showWalletButton?: boolean
+    walletAddress: string | null
+    onConnectWallet: () => void
+    onDisconnectWallet: () => void
 }
 
 export default function Layout({
     children,
     showWalletButton = false,
+    walletAddress,
+    onConnectWallet,
+    onDisconnectWallet,
 }: LayoutProps) {
     const [theme, setTheme] = useState<string | null>(null)
-    const [walletConnected, setWalletConnected] = useState(false)
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light"
         setTheme(newTheme)
         document.documentElement.setAttribute("data-theme", newTheme)
         localStorage.setItem("theme", newTheme)
-    }
-
-    const connectWallet = () => {
-        // 连接钱包的逻辑
-        setWalletConnected(true)
     }
 
     useEffect(() => {
@@ -57,10 +57,19 @@ export default function Layout({
                 <div className="flex items-center">
                     {showWalletButton && (
                         <button
-                            onClick={connectWallet}
+                            onClick={
+                                walletAddress
+                                    ? onDisconnectWallet
+                                    : onConnectWallet
+                            }
                             className="mr-4 p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
                         >
-                            {walletConnected ? "钱包已连接" : "连接钱包"}
+                            {walletAddress
+                                ? `断开钱包 (${walletAddress.slice(
+                                      0,
+                                      6
+                                  )}...${walletAddress.slice(-4)})`
+                                : "连接钱包"}
                         </button>
                     )}
                     <button
