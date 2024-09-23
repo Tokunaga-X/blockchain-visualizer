@@ -53,12 +53,6 @@ export default function Layout({
                     >
                         Home
                     </Link>
-                    <Link
-                        href="/info"
-                        className="hover:text-gray-600 dark:hover:text-gray-400"
-                    >
-                        Info
-                    </Link>
                 </div>
                 <div className="flex items-center">
                     {showWalletButton && (

@@ -1,9 +1,10 @@
 "use client"
 
+import { useCallback, useState } from "react"
+
 import Layout from "./components/Layout"
 import LeftSection from "./components/LeftSection"
 import RightSection from "./components/RightSection"
-import { useState } from "react"
 
 interface Block {
     height: number
@@ -15,6 +16,7 @@ export default function Home() {
     const [blocks, setBlocks] = useState<Block[]>([
         { height: 1, hash: "0x123", data: "创世区块" },
     ])
+    const [leftWidth, setLeftWidth] = useState(50) // 左侧宽度百分比
 
     const handleCreateNewBlock = () => {
         const newBlock: Block = {
@@ -29,20 +31,51 @@ export default function Home() {
         setBlocks([{ height: 1, hash: "0x123", data: "创世区块" }])
     }
 
+    const handleDrag = useCallback((e: React.MouseEvent) => {
+        const newLeftWidth = (e.clientX / window.innerWidth) * 100
+        setLeftWidth(Math.max(20, Math.min(80, newLeftWidth))) // 限制左侧宽度在20%到80%之间
+    }, [])
+
     return (
         <Layout showWalletButton={true}>
-            <div className="flex flex-1">
-                <div className="w-1/2 p-4 flex flex-col justify-center items-center border-r border-gray-300">
-                    <button
-                        onClick={handleResetBlocks}
-                        className="mb-4 p-2 bg-red-500 text-white rounded hover:bg-red-600"
-                    >
-                        重置区块
-                    </button>
-                    <LeftSection onCreateNewBlock={handleCreateNewBlock} />
+            <div className="flex flex-1 relative">
+                <div
+                    style={{ width: `${leftWidth}%` }}
+                    className="p-4 flex flex-col"
+                >
+                    <LeftSection
+                        onCreateNewBlock={handleCreateNewBlock}
+                        onResetBlocks={handleResetBlocks}
+                        blocks={blocks}
+                    />
                 </div>
-                <div className="w-1/2 p-4 flex flex-col justify-center items-center overflow-y-auto max-h-screen">
-                    <RightSection blocks={blocks} />
+                <div
+                    className="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize absolute top-0 bottom-0"
+                    style={{ left: `${leftWidth}%` }}
+                    onMouseDown={() => {
+                        document.addEventListener(
+                            "mousemove",
+                            handleDrag as any
+                        )
+                        document.addEventListener(
+                            "mouseup",
+                            () => {
+                                document.removeEventListener(
+                                    "mousemove",
+                                    handleDrag as any
+                                )
+                            },
+                            { once: true }
+                        )
+                    }}
+                />
+                <div
+                    style={{ width: `${100 - leftWidth}%` }}
+                    className="p-4 flex flex-col justify-center items-center overflow-y-auto max-h-screen"
+                >
+                    <div className="p-4 w-full">
+                        <RightSection blocks={blocks} />
+                    </div>
                 </div>
             </div>
         </Layout>
