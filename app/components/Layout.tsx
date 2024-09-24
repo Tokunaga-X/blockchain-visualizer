@@ -2,7 +2,7 @@
 
 import { ReactNode, useEffect, useState } from "react"
 
-import Link from "next/link"
+import Image from "next/image"
 
 interface LayoutProps {
     children: ReactNode
@@ -46,13 +46,35 @@ export default function Layout({
     return (
         <div className="flex flex-col min-h-screen">
             <nav className="flex justify-between items-center p-4 bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200">
-                <div>
-                    <Link
-                        href="/"
-                        className="mr-4 hover:text-gray-600 dark:hover:text-gray-400"
-                    >
-                        Home
-                    </Link>
+                <div className="flex items-center">
+                    <Image
+                        src="/twitter.png"
+                        alt="Twitter"
+                        width={36}
+                        height={36}
+                        className="mr-4"
+                    />
+                    <Image
+                        src="/x.png"
+                        alt="X"
+                        width={36}
+                        height={36}
+                        className="mr-0"
+                    />
+                    <span className="mx-4">|</span>
+                    <Image
+                        src="/bitcoin.png"
+                        alt="Bitcoin"
+                        width={36}
+                        height={36}
+                        className="mr-4"
+                    />
+                    <Image
+                        src="/ethereum.png"
+                        alt="Ethereum"
+                        width={36}
+                        height={36}
+                    />
                 </div>
                 <div className="flex items-center">
                     {showWalletButton && (
