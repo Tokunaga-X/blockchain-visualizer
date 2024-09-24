@@ -84,7 +84,7 @@ export default function LeftSection({
                         value={inputValue}
                         onChange={handleInputChange}
                         onKeyPress={handleKeyPress}
-                        className="p-2 border rounded w-full h-20 text-black"
+                        className="p-2 border border-gray-300 rounded w-full h-20 text-black dark:border-gray-600 dark:bg-gray-700 dark:text-white"
                     />
                     <button
                         onClick={handlePost}
