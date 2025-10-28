@@ -1,11 +1,11 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 
 import Layout from "./components/Layout"
 import LeftSection from "./components/LeftSection"
 import RightSection from "./components/RightSection"
-import { ethers } from "ethers"
+import { ethers, type Eip1193Provider } from "ethers"
 
 interface Block {
     height: number
@@ -15,28 +15,31 @@ interface Block {
 
 declare global {
     interface Window {
-        ethereum?: any
+        ethereum?: Eip1193Provider
     }
 }
 
 // 自定义节流函数
-function throttle(func: (...args: any[]) => void, limit: number) {
+function throttle<T extends (...args: unknown[]) => void>(
+    func: T,
+    limit: number
+) {
     let lastFunc: ReturnType<typeof setTimeout>
-    let lastRan: number
-    return function (...args: any[]) {
+    let lastRan = 0
+    return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
         if (!lastRan) {
-            func(...args)
+            func.apply(this, args)
             lastRan = Date.now()
         } else {
             clearTimeout(lastFunc)
-            lastFunc = setTimeout(function () {
+            lastFunc = setTimeout(() => {
                 if (Date.now() - lastRan >= limit) {
-                    func(...args)
+                    func.apply(this, args)
                     lastRan = Date.now()
                 }
             }, limit - (Date.now() - lastRan))
         }
-    }
+    } as T
 }
 
 export default function Home() {
@@ -95,13 +98,25 @@ export default function Home() {
         setBlocks([{ height: 1, hash: "0x123", data: "创世区块" }])
     }
 
-    const handleDrag = useCallback(
-        throttle((e: React.MouseEvent) => {
-            const newLeftWidth = (e.clientX / window.innerWidth) * 100
-            setLeftWidth(Math.max(20, Math.min(80, newLeftWidth))) // 限制左侧宽度在20%到80%之间
-        }, 100),
+    const handleMouseMove = useMemo(
+        () =>
+            throttle((event: MouseEvent) => {
+                const newLeftWidth = (event.clientX / window.innerWidth) * 100
+                setLeftWidth(Math.max(20, Math.min(80, newLeftWidth))) // 限制左侧宽度在20%到80%之间
+            }, 100),
         []
     )
+
+    const handleDragStart = () => {
+        document.addEventListener("mousemove", handleMouseMove)
+        document.addEventListener(
+            "mouseup",
+            () => {
+                document.removeEventListener("mousemove", handleMouseMove)
+            },
+            { once: true }
+        )
+    }
 
     const connectWallet = async () => {
         if (provider) {
@@ -129,10 +144,10 @@ export default function Home() {
             onConnectWallet={connectWallet}
             onDisconnectWallet={disconnectWallet}
         >
-            <div className="flex flex-1 relative">
+            <div className="relative flex w-full max-w-6xl flex-1 overflow-hidden rounded-3xl border border-white/50 bg-white/75 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.55)] backdrop-blur-xl dark:border-slate-800/60 dark:bg-slate-900/60">
                 <div
                     style={{ width: `${leftWidth || 50}%` }}
-                    className="p-4 flex flex-col"
+                    className="flex flex-col gap-6 p-6"
                 >
                     <LeftSection
                         onCreateNewBlock={handleCreateNewBlock}
@@ -144,30 +159,15 @@ export default function Home() {
                     />
                 </div>
                 <div
-                    className="w-1 bg-gray-300 hover:bg-gray-400 cursor-col-resize absolute top-0 bottom-0"
+                    className="absolute top-6 bottom-6 z-10 w-1 cursor-col-resize rounded-full bg-slate-200/80 transition hover:bg-indigo-400 dark:bg-slate-700/60 dark:hover:bg-indigo-400"
                     style={{ left: `${leftWidth || 50}%` }}
-                    onMouseDown={() => {
-                        document.addEventListener(
-                            "mousemove",
-                            handleDrag as any
-                        )
-                        document.addEventListener(
-                            "mouseup",
-                            () => {
-                                document.removeEventListener(
-                                    "mousemove",
-                                    handleDrag as any
-                                )
-                            },
-                            { once: true }
-                        )
-                    }}
+                    onMouseDown={handleDragStart}
                 />
                 <div
                     style={{ width: `${100 - (leftWidth || 50)}%` }}
-                    className="p-4 flex flex-col justify-center items-center overflow-y-auto max-h-screen"
+                    className="flex max-h-screen flex-col items-center justify-center overflow-y-auto p-6"
                 >
-                    <div className="p-4 w-full">
+                    <div className="w-full space-y-4">
                         <RightSection blocks={blocks} />
                     </div>
                 </div>

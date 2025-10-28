@@ -1,9 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
-
 import BlockCard from "./BlockCard"
-import Image from "next/image"
 
 interface Block {
     height: number
@@ -16,48 +13,18 @@ interface RightSectionProps {
 }
 
 export default function RightSection({ blocks }: RightSectionProps) {
-    const [theme, setTheme] = useState<string>("light")
-
-    useEffect(() => {
-        const savedTheme = localStorage.getItem("theme")
-        setTheme(savedTheme || "light")
-
-        const observer = new MutationObserver(mutations => {
-            mutations.forEach(mutation => {
-                if (
-                    mutation.type === "attributes" &&
-                    mutation.attributeName === "data-theme"
-                ) {
-                    setTheme(
-                        document.documentElement.getAttribute("data-theme") ||
-                            "light"
-                    )
-                }
-            })
-        })
-
-        observer.observe(document.documentElement, { attributes: true })
-
-        return () => observer.disconnect()
-    }, [])
-
     return (
-        <div className="flex flex-col items-center">
+        <div className="relative flex w-full flex-col items-center">
+            <div className="absolute top-0 bottom-0 hidden w-px bg-gradient-to-b from-indigo-500/20 via-indigo-500/40 to-transparent dark:from-indigo-400/20 dark:via-indigo-500/50 sm:block" />
             {blocks.map((block, index) => (
-                <div key={block.hash} className="flex flex-col items-center">
+                <div
+                    key={block.hash}
+                    className="flex w-full flex-col items-center"
+                >
                     <BlockCard block={block} />
                     {index < blocks.length - 1 && (
-                        <div className="my-2">
-                            <Image
-                                src={
-                                    theme === "dark"
-                                        ? "/arrows.png"
-                                        : "/arrow-down.png"
-                                }
-                                alt="Down Arrow"
-                                width={24}
-                                height={24}
-                            />
+                        <div className="my-2 flex w-full justify-center">
+                            <div className="h-14 w-[2px] rounded-full bg-gradient-to-b from-indigo-400/50 via-indigo-500/70 to-purple-500/40 dark:from-indigo-500/40 dark:via-indigo-400/60 dark:to-purple-500/40" />
                         </div>
                     )}
                 </div>
