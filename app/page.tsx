@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import Layout from "./components/Layout"
 import LeftSection from "./components/LeftSection"
@@ -49,6 +49,7 @@ export default function Home() {
     const [provider, setProvider] = useState<ethers.BrowserProvider | null>(
         null
     )
+    const rightPaneRef = useRef<HTMLDivElement | null>(null)
 
     // 从 localStorage 加载区块数据和 leftWidth
     useEffect(() => {
@@ -163,14 +164,24 @@ export default function Home() {
                     style={{ left: `${leftWidth || 50}%` }}
                     onMouseDown={handleDragStart}
                 />
-                <div
+                <section
                     style={{ width: `${100 - (leftWidth || 50)}%` }}
-                    className="flex max-h-screen flex-col items-center justify-center overflow-y-auto p-6"
+                    className="flex max-h-screen flex-col overflow-hidden"
                 >
-                    <div className="w-full space-y-4">
-                        <RightSection blocks={blocks} />
+                    <div className="flex-1 overflow-y-auto p-6" ref={rightPaneRef}>
+                        <div className="mx-auto w-full space-y-4">
+                            <RightSection
+                                blocks={blocks}
+                                onScrollToTop={() =>
+                                    rightPaneRef.current?.scrollTo({
+                                        top: 0,
+                                        behavior: "smooth",
+                                    })
+                                }
+                            />
+                        </div>
                     </div>
-                </div>
+                </section>
             </div>
         </Layout>
     )
